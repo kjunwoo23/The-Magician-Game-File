@@ -16,7 +16,7 @@ public class CardManager : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         int.TryParse(cardLeft.text, out UIcard);
         if (UIcard > Player.instance.deck)

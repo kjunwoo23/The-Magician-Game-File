@@ -7,6 +7,7 @@ public class Posts : MonoBehaviour
 {
     public bool pw = false;
     public Animator animator;
+    public Text text;
     // Start is called before the first frame update
     void Start()
     {
@@ -43,6 +44,7 @@ public class Posts : MonoBehaviour
     public void Invisible()
     {
         GetComponent<RawImage>().enabled = false;
+        text.enabled = false;
     }
     public void disappear2()
     {

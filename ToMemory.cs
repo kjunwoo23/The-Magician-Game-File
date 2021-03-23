@@ -18,7 +18,7 @@ public class ToMemory : MonoBehaviour
     public int changeCardtypeA, changeCardtypeB;
     float time = 0f;
     float F_time = 1f;
-    private void OnTriggerEnter2D(Collider2D collision)
+    /*private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.tag == "Player")
         {
@@ -58,7 +58,7 @@ public class ToMemory : MonoBehaviour
             }
         }
     }
-
+    
     public IEnumerator FadeOut()
     {
         cardClick = 0;
@@ -145,7 +145,7 @@ public class ToMemory : MonoBehaviour
         Player.instance.transform.position = new Vector3(toHere.position.x, Player.instance.transform.position.y + y, 0);
     }
 
-
+    */
 
 
 

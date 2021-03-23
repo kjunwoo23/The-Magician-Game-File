@@ -11,10 +11,11 @@ public class Enemy2 : MonoBehaviour
     public float slowSpeed;
     public float fastSpeed;
     public float confSpeed;
+    public SpriteRenderer sprite;
     public Animator animator;
     bool flag = false;
-    public Transform target;
-    public Dummy dummy;
+    //public Transform target;
+    Dummy dummy;
     public float restTime;
     public float dmgTime;
     public RawImage rawImage;
@@ -25,13 +26,18 @@ public class Enemy2 : MonoBehaviour
     void Start()
     {
         fullHp = hp;
+        animator.SetTrigger("awake");
     }
 
     // Update is called once per frame
     void Update()
     {
-
         if (Player.instance.transform.position.y > transform.position.y + 5 || Player.instance.transform.position.y < transform.position.y - 5) return;
+
+        if (dummy == null)
+            dummy = Player.instance.dummy;
+
+        animator.speed = 1 / Player.instance.BWJoker;
 
         if (Player.instance.guideOn == true)
         {
@@ -55,25 +61,29 @@ public class Enemy2 : MonoBehaviour
             StopCoroutine("Confusion");
             animator.SetBool("panic", false);
         }
+    }
+    private void FixedUpdate()
+    {
+        if (Player.instance.transform.position.y > transform.position.y + 5 || Player.instance.transform.position.y < transform.position.y - 5) return;
+        if (dummy == null)
+            dummy = Player.instance.dummy;
 
         if (!animator.GetBool("panic") && dmg)
         {
-            if (dummy.enabled == true)
-                target.position = dummy.transform.position;
-            else
-                target.position = Player.instance.transform.position;
+            if (dummy.enabled == false)
+                dummy.transform.position = Player.instance.transform.position;
             if (hp > 0)
             {
-                if (transform.position.x < target.position.x)
+                if (transform.position.x < dummy.transform.position.x)
                 {
                     transform.localScale = new Vector3(-0.9f, 0.9f, 0);
-                    transform.position += new Vector3(fastSpeed * Time.deltaTime / Player.instance.BWJoker, 0, 0);
+                    transform.position += new Vector3(fastSpeed * Time.fixedDeltaTime / Player.instance.BWJoker, 0, 0);
                     text.transform.localScale = new Vector3(-0.01f, 0.01f, 0);
                 }
-                if (transform.position.x > target.position.x)
+                if (transform.position.x > dummy.transform.position.x)
                 {
                     transform.localScale = new Vector3(0.9f, 0.9f, 0);
-                    transform.position -= new Vector3(fastSpeed * Time.deltaTime / Player.instance.BWJoker, 0, 0);
+                    transform.position -= new Vector3(fastSpeed * Time.fixedDeltaTime / Player.instance.BWJoker, 0, 0);
                     text.transform.localScale = new Vector3(0.01f, 0.01f, 0);
                 }
             }
@@ -83,9 +93,11 @@ public class Enemy2 : MonoBehaviour
     }
     IEnumerator Rest()
     {
+        Color a = sprite.color;
         rawImage.enabled = true;
         image.enabled = true;
         animator.SetBool("back", true);
+        sprite.color = new Color(a.r, a.g, a.b, 0.7f);
         dmgTime = restTime;
         dmg = false;
         for (; dmgTime > 0; dmgTime -= Time.deltaTime / Player.instance.BWJoker)
@@ -95,6 +107,7 @@ public class Enemy2 : MonoBehaviour
         }
         hp = fullHp;
         dmg = true;
+        sprite.color = new Color(a.r, a.g, a.b, 1);
         animator.SetBool("back", false);
         rawImage.enabled = false;
         image.enabled = false;

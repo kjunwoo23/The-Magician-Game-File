@@ -18,7 +18,7 @@ public class Dummy : MonoBehaviour
         if (!enabled) return;
         if (Player.instance.isHacking)
             DestroyDummy();
-        time += Time.deltaTime;
+        time += Time.deltaTime / Player.instance.BWJoker;
         if (time > 5) DestroyDummy();
 
     }

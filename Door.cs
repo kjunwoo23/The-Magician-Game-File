@@ -5,94 +5,102 @@ using UnityEngine;
 public class Door : MonoBehaviour
 {
     public Transform pos;
-    public Dummy dummy;
+    Dummy dummy;
+    Player player;
     void OnTriggerStay2D(Collider2D collision)
     {
         if (collision.tag == "Player")
-            if (Input.GetKeyDown(KeyCode.W))
+        {
+            if (player == null)
+                player = Player.instance;
+            if (Input.GetKeyDown(KeyCode.W) && !player.gameover && !player.library)
             {
-                if (Player.instance.skill == false)
+                if (player.skill == false)
                 {
-                    if (Player.instance.isDisguise && !Player.instance.fade.enabled)
+                    if (player.isDisguise && !player.fade.enabled)
                     {
-                        Player.instance.StopCoroutine("Disguise");
-                        Player.instance.animator.SetBool("disguise", false);
-                        Player.instance.disguiseCur = Player.instance.disguiseCool;
-                        Player.instance.alpha = Player.instance.sprite.color;
-                        Player.instance.alpha.a = 1;
-                        Player.instance.sprite.color = Player.instance.alpha;
-                        Player.instance.isDisguise = false;
+                        player.StopCoroutine("Disguise");
+                        player.animator.SetBool("disguise", false);
+                        player.disguiseCur = player.disguiseCool;
+                        Color color = player.sprite.color;
+                        color.a = 1;
+                        player.sprite.color = color;
+                        player.isDisguise = false;
                         EffectManager.instance.effectSounds[12].source.Stop();
                         Dummy.instance.DestroyDummy();
                     }
                     StartCoroutine(DoorOpen(collision));
                 }
             }
+        }
     }
 
-    IEnumerator DoorOpen(Collider2D collision)
+    public IEnumerator DoorOpen(Collider2D collision)
     {
-        Player.instance.animator.SetBool("walking", false);
-        if (Player.instance.deck > 0)
+        player.animator.SetBool("walking", false);
+        if (player.deck > 0)
         {
-            Player.instance.animator.SetBool("door", true);
-            Player.instance.deck --;
-            Player.instance.skill = true;
-            Player.instance.GetComponent<Rigidbody2D>().constraints = RigidbodyConstraints2D.FreezePosition|RigidbodyConstraints2D.FreezeRotation;
+            //player.animator.SetBool("door", true);
+            player.animator.SetTrigger("doorT");
+            if (!(player.isDisguise && player.fade.enabled)) player.deck--;
+            player.skill = true;
+            player.myRigid.constraints = RigidbodyConstraints2D.FreezePosition|RigidbodyConstraints2D.FreezeRotation;
             yield return new WaitForSeconds(0.3f);
-            if (Player.instance.deck > 0) Player.instance.deck --;
+            if (player.deck > 0 && !(player.isDisguise && player.fade.enabled)) player.deck --;
             yield return new WaitForSeconds(0.1f);
             EffectManager.instance.effectSounds[3].source.Play();
             yield return new WaitForSeconds(0.1f);
-            if (Player.instance.deck > 0) Player.instance.deck --;
+            if (player.deck > 0 && !(player.isDisguise && player.fade.enabled)) player.deck --;
             yield return new WaitForSeconds(0.2f);
             //if (Player.instance.deck > 0) Player.instance.deck--;
             yield return new WaitForSeconds(0.2f);
             EffectManager.instance.effectSounds[40].source.Play();
-            if (Player.instance.deck > 0) Player.instance.deck --;
+            if (player.deck > 0 && !(player.isDisguise && player.fade.enabled)) player.deck --;
             yield return new WaitForSeconds(0.3f);
-            if (Player.instance.deck > 0) Player.instance.deck --;
+            if (player.deck > 0 && !(player.isDisguise && player.fade.enabled)) player.deck --;
             EffectManager.instance.effectSounds[4].source.Play();
             yield return new WaitForSeconds(0.3f);
-            dummy.transform.position = Player.instance.transform.position;
-            dummy.transform.localScale = Player.instance.transform.localScale;
+            dummy.transform.position = player.transform.position;
+            dummy.transform.localScale = player.transform.localScale;
             dummy.GetComponent<SpriteRenderer>().enabled = true;
             dummy.enabled = true;
             dummy.time = 0;
-            Player.instance.gas.transform.position = dummy.transform.position;
-            Player.instance.gas.enabled = true;
+            player.gas.transform.position = dummy.transform.position;
+            player.gas.enabled = true;
             //if (Player.instance.deck > 0) Player.instance.deck--;
             yield return new WaitForSeconds(1.2f);
             //if (Player.instance.deck > 0) Player.instance.deck--;
-            collision.GetComponent<Transform>().position = new Vector3(pos.position.x, collision.GetComponent<Transform>().position.y, collision.GetComponent<Transform>().position.z);
+            player.transform.position = new Vector3(pos.position.x, player.transform.position.y, 0);
             EffectManager.instance.effectSounds[5].source.Play();
-            collision.GetComponent<Rigidbody2D>().constraints = RigidbodyConstraints2D.FreezePositionY|RigidbodyConstraints2D.FreezeRotation;
-            collision.GetComponent<Player>().skill = false;
-            Player.instance.animator.SetBool("door", false);
+            player.myRigid.constraints = RigidbodyConstraints2D.FreezePositionY|RigidbodyConstraints2D.FreezeRotation;
+            player.skill = false;
+            //player.animator.SetBool("door", false);
             Invoke("GasDisappear", 5);
         }
     }
     
     public void GasDisappear()
     {
-        Player.instance.gas.GetComponent<Animator>().SetTrigger("disappear");
+        player.gas.GetComponent<Animator>().SetTrigger("disappear");
         Invoke("NoGas", 1);
     }
     public void NoGas()
     {
-        Player.instance.gas.enabled = false;
+        player.gas.enabled = false;
     }
 
 
     // Start is called before the first frame update
     void Start()
     {
-        
+        player = Player.instance;
+        //dummy = Player.instance.dummy;
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if (dummy == null)
+            dummy = Player.instance.dummy;
     }
 }

@@ -12,8 +12,8 @@ public class Enemy4 : MonoBehaviour
     public float curTime;
     public Animator animator;
     bool flag = false;
-    public Transform target;
-    public Dummy dummy;
+    //public Transform target;
+    Dummy dummy;
     public bool area;
     Vector2 MousePosition;
     public Text text;
@@ -22,14 +22,20 @@ public class Enemy4 : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
+        animator.SetTrigger("awake");
     }
 
     // Update is called once per frame
     void Update()
     {
         if (Player.instance.transform.position.y > transform.position.y + 5 || Player.instance.transform.position.y < transform.position.y - 5) return;
+
+        if (dummy == null)
+            dummy = Player.instance.dummy;
+
         curTime += Time.deltaTime / Player.instance.BWJoker;
+
+        animator.speed = 1 / Player.instance.BWJoker;
 
         if (Player.instance.guideOn == true)
         {
@@ -49,66 +55,76 @@ public class Enemy4 : MonoBehaviour
             StopCoroutine("Confusion");
             animator.SetBool("panic", false);
         }
+        
+        area = false;
+    }
+    private void FixedUpdate()
+    {
+        if (Player.instance.transform.position.y > transform.position.y + 5 || Player.instance.transform.position.y < transform.position.y - 5) return;
+        if (dummy == null)
+            dummy = Player.instance.dummy;
         if (!animator.GetBool("panic"))
         {
             if (dummy.enabled == true)
             {
-                target.position = dummy.transform.position;
+                //target.position = dummy.transform.position;
                 if (dummy.transform.localScale.x > 0)
-                    if (target.transform.position.x < transform.position.x)
+                    if (dummy.transform.transform.position.x < transform.position.x)
                         curTime = 0;
                 if (dummy.transform.localScale.x < 0)
-                    if (target.transform.position.x > transform.position.x)
+                    if (dummy.transform.transform.position.x > transform.position.x)
                         curTime = 0;
                 if (curTime > maxTime)
                 {
                     animator.SetBool("back", false);
                     text.enabled = true;
-                    if (transform.position.x < target.position.x)
+                    if (transform.position.x < dummy.transform.position.x)
                     {
                         transform.localScale = new Vector3(-0.9f, 0.9f, 0);
-                        transform.position += new Vector3(fastSpeed * Time.deltaTime / Player.instance.BWJoker, 0, 0);
+                        transform.position += new Vector3(fastSpeed * Time.fixedDeltaTime / Player.instance.BWJoker, 0, 0);
                     }
-                    if (transform.position.x > target.position.x)
+                    if (transform.position.x > dummy.transform.position.x)
                     {
                         transform.localScale = new Vector3(0.9f, 0.9f, 0);
-                        transform.position -= new Vector3(fastSpeed * Time.deltaTime / Player.instance.BWJoker, 0, 0);
+                        transform.position -= new Vector3(fastSpeed * Time.fixedDeltaTime / Player.instance.BWJoker, 0, 0);
                     }
                 }
                 else
                 {
                     animator.SetBool("back", true);
                     text.enabled = false;
-                    if (transform.position.x < target.position.x)
+                    if (transform.position.x < dummy.transform.position.x)
                     {
                         transform.localScale = new Vector3(-0.9f, 0.9f, 0);
                         if (!area)
-                            transform.position -= new Vector3(slowSpeed * Time.deltaTime / Player.instance.BWJoker, 0, 0);
+                            transform.position -= new Vector3(slowSpeed * Time.fixedDeltaTime / Player.instance.BWJoker, 0, 0);
                         else
-                            transform.position += new Vector3(slowSpeed * Time.deltaTime / Player.instance.BWJoker, 0, 0);
+                            transform.position += new Vector3(slowSpeed * Time.fixedDeltaTime / Player.instance.BWJoker, 0, 0);
 
                     }
-                    if (transform.position.x > target.position.x)
+                    if (transform.position.x > dummy.transform.position.x)
                     {
                         transform.localScale = new Vector3(0.9f, 0.9f, 0);
                         if (!area)
-                            transform.position += new Vector3(slowSpeed * Time.deltaTime / Player.instance.BWJoker, 0, 0);
+                            transform.position += new Vector3(slowSpeed * Time.fixedDeltaTime / Player.instance.BWJoker, 0, 0);
                         else
-                            transform.position -= new Vector3(slowSpeed * Time.deltaTime / Player.instance.BWJoker, 0, 0);
+                            transform.position -= new Vector3(slowSpeed * Time.fixedDeltaTime / Player.instance.BWJoker, 0, 0);
                     }
                 }
             }
             else
             {
-                target.position = Player.instance.transform.position;
-                MousePosition = Player.instance.MousePosition;
+                dummy.transform.position = Player.instance.transform.position;
+                //MousePosition = Player.instance.MousePosition;
                 if (Player.instance.isHacking) ;
-                else if (MousePosition.x > Player.instance.transform.position.x + 0.5 * Player.instance.playerSize)
+                else if ((Player.instance.transform.localScale.x > 0 && !Player.instance.sprite.flipX) || (Player.instance.transform.localScale.x < 0 && Player.instance.sprite.flipX)
+                    /*MousePosition.x > Player.instance.transform.position.x + 0.5 * Player.instance.playerSize*/)
                 {
                     if (Player.instance.transform.position.x < transform.position.x)
                         curTime = 0;
                 }
-                else if (MousePosition.x < Player.instance.transform.position.x - 0.5 * Player.instance.playerSize)
+                else if ((Player.instance.transform.localScale.x > 0 && Player.instance.sprite.flipX) || (Player.instance.transform.localScale.x < 0 && !Player.instance.sprite.flipX)
+                    /*MousePosition.x < Player.instance.transform.position.x - 0.5 * Player.instance.playerSize*/)
                 {
                     if (Player.instance.transform.position.x > transform.position.x)
                         curTime = 0;
@@ -117,42 +133,41 @@ public class Enemy4 : MonoBehaviour
                 {
                     animator.SetBool("back", false);
                     text.enabled = true;
-                    if (transform.position.x < target.position.x)
+                    if (transform.position.x < dummy.transform.position.x)
                     {
                         transform.localScale = new Vector3(-0.9f, 0.9f, 0);
-                        transform.position += new Vector3(fastSpeed * Time.deltaTime / Player.instance.BWJoker, 0, 0);
+                        transform.position += new Vector3(fastSpeed * Time.fixedDeltaTime / Player.instance.BWJoker, 0, 0);
                     }
-                    if (transform.position.x > target.position.x)
+                    if (transform.position.x > dummy.transform.position.x)
                     {
                         transform.localScale = new Vector3(0.9f, 0.9f, 0);
-                        transform.position -= new Vector3(fastSpeed * Time.deltaTime / Player.instance.BWJoker, 0, 0);
+                        transform.position -= new Vector3(fastSpeed * Time.fixedDeltaTime / Player.instance.BWJoker, 0, 0);
                     }
                 }
                 else
                 {
                     animator.SetBool("back", true);
                     text.enabled = false;
-                    if (transform.position.x < target.position.x)
+                    if (transform.position.x < dummy.transform.position.x)
                     {
                         transform.localScale = new Vector3(-0.9f, 0.9f, 0);
                         if (!area)
-                            transform.position -= new Vector3(slowSpeed * Time.deltaTime / Player.instance.BWJoker, 0, 0);
+                            transform.position -= new Vector3(slowSpeed * Time.fixedDeltaTime / Player.instance.BWJoker, 0, 0);
                         else
-                            transform.position += new Vector3(slowSpeed * Time.deltaTime / Player.instance.BWJoker, 0, 0);
+                            transform.position += new Vector3(slowSpeed * Time.fixedDeltaTime / Player.instance.BWJoker, 0, 0);
 
                     }
-                    if (transform.position.x > target.position.x)
+                    if (transform.position.x > dummy.transform.position.x)
                     {
                         transform.localScale = new Vector3(0.9f, 0.9f, 0);
                         if (!area)
-                            transform.position += new Vector3(slowSpeed * Time.deltaTime / Player.instance.BWJoker, 0, 0);
+                            transform.position += new Vector3(slowSpeed * Time.fixedDeltaTime / Player.instance.BWJoker, 0, 0);
                         else
-                            transform.position -= new Vector3(slowSpeed * Time.deltaTime / Player.instance.BWJoker, 0, 0);
+                            transform.position -= new Vector3(slowSpeed * Time.fixedDeltaTime / Player.instance.BWJoker, 0, 0);
                     }
                 }
             }
         }
-        area = false;
     }
     IEnumerator Confusion()
     {
